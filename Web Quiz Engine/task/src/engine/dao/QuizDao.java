@@ -10,7 +10,7 @@ public interface QuizDao {
 
     List<QuestionNoAnswer> getAllQuestions();
 
-    Answer getAnswer(Integer id, Integer answer);
+    Answer getAnswer(int id, int[] answer);
 
     QuestionNoAnswer insertQuestion(Question question);
 

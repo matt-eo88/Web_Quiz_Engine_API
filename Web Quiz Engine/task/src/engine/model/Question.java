@@ -10,13 +10,13 @@ public class Question {
     private final String title;
     private final String text;
     private final String[] options;
-    private final int answer;
+    private final int[] answer;
 
     public Question(@JsonProperty("id") int id,
                     @JsonProperty("title") String title,
                     @JsonProperty("text") String text,
                     @JsonProperty("options") String[] options,
-                    @JsonProperty("answer") int answer) {
+                    @JsonProperty("answer") int[] answer) {
         this.id = id;
         this.title = title;
         this.text = text;
@@ -40,7 +40,7 @@ public class Question {
         return options;
     }
 
-    public int getAnswer() {
+    public int[] getAnswer() {
         return answer;
     }
 }

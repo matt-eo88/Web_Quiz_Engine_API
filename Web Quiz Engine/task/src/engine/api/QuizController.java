@@ -1,6 +1,7 @@
 package engine.api;
 
 import engine.model.Answer;
+import engine.model.AnswerJSon;
 import engine.model.Question;
 import engine.model.QuestionNoAnswer;
 import engine.service.QuizService;
@@ -33,9 +34,9 @@ public class QuizController
     }
 
     @PostMapping(path = "{id}/solve")
-    public Answer getAnswerResponse(@PathVariable("id") int id, @RequestParam(name = "answer") Integer answer)
+    public Answer getAnswerResponse(@PathVariable("id") int id, @RequestBody AnswerJSon answerJSon)
     {
-        return quizService.getAnswer(id, answer);
+        return quizService.getAnswer(id, answerJSon.getAnswer());
     }
 
     @PostMapping

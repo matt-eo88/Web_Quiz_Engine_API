@@ -4,10 +4,12 @@ import engine.exceptions.QuizNotFoundException;
 import engine.model.Answer;
 import engine.model.Question;
 import engine.model.QuestionNoAnswer;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository("dao")
@@ -28,23 +30,32 @@ public class QuestionDataAccessService implements QuizDao {
     }
 
     @Override
-    public Answer getAnswer(Integer id, Integer answer) {
-        final Optional<Question> questionOptional = getQuestionWithAnswer(id);
+    public Answer getAnswer(int id, int[] answer) {
+        final Question q = getQuestionWithAnswer(id);
+        int[] correctAnswer = q.getAnswer();
 
-        return questionOptional.stream()
-                .mapToInt(Question::getAnswer)
-                .mapToObj((correctAnswer) -> {
-                    Answer correct = new Answer(true, "You are correct!");
-                    Answer incorrect = new Answer(false, "You are wrong!");
-                    return answer == correctAnswer ? correct : incorrect;
-                }).findFirst()
-                .orElseThrow(() -> new QuizNotFoundException(id));
+        if (correctAnswer == null) {
+            correctAnswer = new int[0];
+        }
 
+        if (Arrays.equals(answer, correctAnswer)) {
+            return new Answer(true, "You are correct!");
+        } else if (!Arrays.equals(answer, correctAnswer)) {
+            return new Answer(false, "You are not correct!");
+        } else {
+            throw new QuizNotFoundException(id);
+        }
     }
 
     @Override
     public QuestionNoAnswer insertQuestion(Question question)
     {
+        if ((question.getOptions() == null || question.getOptions().length < 2)
+        || (question.getText() == null || question.getText().isEmpty()) ||
+                (question.getTitle() == null || question.getTitle().isEmpty())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         int id = DB.size() + 1;
         DB.add(new Question(
                 id,
@@ -64,20 +75,22 @@ public class QuestionDataAccessService implements QuizDao {
 
     @Override
     public QuestionNoAnswer getQuestionById(int id){
-        Optional<Question> questionOptional = getQuestionWithAnswer(id);
+        Question q = getQuestionWithAnswer(id);
+        if (q == null) {
+            throw new QuizNotFoundException(id);
+        }
 
-        return questionOptional.map(question -> new QuestionNoAnswer(
-                question.getId(),
-                question.getTitle(),
-                question.getText(),
-                question.getOptions()
-        )).orElseThrow(() -> new QuizNotFoundException(id));
-
+        return new QuestionNoAnswer(q.getId(),
+                q.getTitle(), q.getText(),
+                q.getOptions());
     }
 
-    private Optional<Question> getQuestionWithAnswer(int id) {
-        return DB.stream()
-                .filter(question -> question.getId() == id)
-                .findFirst();
+    private Question getQuestionWithAnswer(int id) {
+        for (Question q : DB) {
+            if (q.getId() == id) {
+                return q;
+            }
+        }
+        return null;
     }
 }

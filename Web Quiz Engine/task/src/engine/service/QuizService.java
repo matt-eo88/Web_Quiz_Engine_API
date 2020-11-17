@@ -25,7 +25,7 @@ public class QuizService {
         return quizDao.getAllQuestions();
     }
 
-    public Answer getAnswer(int id, Integer answer)
+    public Answer getAnswer(int id, int[] answer)
     {
         return quizDao.getAnswer(id, answer);
     }
