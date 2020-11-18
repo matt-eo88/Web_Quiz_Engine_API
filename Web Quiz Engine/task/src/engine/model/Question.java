@@ -3,14 +3,25 @@ package engine.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
+import javax.persistence.*;
+
 @Getter
+@Entity
+@Table(name = "questions")
 public class Question {
 
-    private final int id;
-    private final String title;
-    private final String text;
-    private final String[] options;
-    private final int[] answer;
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+    @Column
+    private String title;
+    @Column
+    private String text;
+    @Column
+    private String[] options;
+    @Column
+    private int[] answer;
 
     public Question(@JsonProperty("id") int id,
                     @JsonProperty("title") String title,
@@ -23,6 +34,9 @@ public class Question {
         this.options = options;
         this.answer = answer;
     }
+
+    public Question() {}
+
 
     public int getId() {
         return id;

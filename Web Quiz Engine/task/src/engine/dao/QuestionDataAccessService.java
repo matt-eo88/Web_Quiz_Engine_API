@@ -4,34 +4,40 @@ import engine.exceptions.QuizNotFoundException;
 import engine.model.Answer;
 import engine.model.Question;
 import engine.model.QuestionNoAnswer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Repository("dao")
 public class QuestionDataAccessService implements QuizDao {
 
-    private static final List<Question> DB = new ArrayList<>();
+    @Autowired
+    private QuestionRepository repository;
 
     @Override
     public List<QuestionNoAnswer> getAllQuestions()
-    {
-        return DB.stream()
-                .map(question -> new  QuestionNoAnswer(
+    {   List<QuestionNoAnswer> allQuestions = new ArrayList<>();
+
+        repository.findAll().
+                forEach(question -> allQuestions.add(new  QuestionNoAnswer(
                         question.getId(),
                         question.getTitle(),
                         question.getText(),
-                        question.getOptions()))
-                .collect(Collectors.toList());
+                        question.getOptions())));
+
+        return allQuestions;
     }
 
     @Override
     public Answer getAnswer(int id, int[] answer) {
-        final Question q = getQuestionWithAnswer(id);
+        final Question q = getQuestionWithAnswer(id).orElseThrow(()
+        -> new QuizNotFoundException(id));
+
         int[] correctAnswer = q.getAnswer();
 
         if (correctAnswer == null) {
@@ -56,8 +62,8 @@ public class QuestionDataAccessService implements QuizDao {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        int id = DB.size() + 1;
-        DB.add(new Question(
+        int id = (int) repository.count() + 1;
+        repository.save(new Question(
                 id,
                 question.getTitle(),
                 question.getText(),
@@ -65,7 +71,8 @@ public class QuestionDataAccessService implements QuizDao {
                 question.getAnswer()
         ));
 
-        Question newQuestion = DB.get(DB.size()-1);
+        Optional<Question> newQ = repository.findById(id);
+        Question newQuestion = newQ.orElseThrow(() -> new QuizNotFoundException(id));
         return new QuestionNoAnswer(
                 newQuestion.getId(),
                 newQuestion.getTitle(),
@@ -75,22 +82,16 @@ public class QuestionDataAccessService implements QuizDao {
 
     @Override
     public QuestionNoAnswer getQuestionById(int id){
-        Question q = getQuestionWithAnswer(id);
-        if (q == null) {
-            throw new QuizNotFoundException(id);
-        }
+        Optional<Question> question = getQuestionWithAnswer(id);
+        Question q = question.orElse(question.orElseThrow(() ->
+                new QuizNotFoundException(id)));
 
         return new QuestionNoAnswer(q.getId(),
                 q.getTitle(), q.getText(),
                 q.getOptions());
     }
 
-    private Question getQuestionWithAnswer(int id) {
-        for (Question q : DB) {
-            if (q.getId() == id) {
-                return q;
-            }
-        }
-        return null;
+    private Optional<Question> getQuestionWithAnswer(int id) {
+        return repository.findById(id);
     }
 }
