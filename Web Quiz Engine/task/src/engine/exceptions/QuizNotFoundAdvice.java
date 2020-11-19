@@ -12,8 +12,15 @@ public class QuizNotFoundAdvice {
     @ResponseBody
     @ExceptionHandler(QuizNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String quizNotFoundHandler(QuizNotFoundException exception)
+    public String quizNotFoundHandler(QuizNotFoundException e)
     {
-        return exception.getMessage();
+        return e.getMessage();
+    }
+
+    @ResponseBody
+    @ExceptionHandler(EmailAlreadyInUseException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String emailAlreadyInUseHandler(EmailAlreadyInUseException e) {
+        return e.getMessage();
     }
 }

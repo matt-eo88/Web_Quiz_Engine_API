@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository("dao")
-public class QuestionDataAccessService implements QuizDao {
+public class QuestionDataAccess implements QuizDao {
 
     @Autowired
     private QuestionRepository repository;
@@ -94,4 +94,5 @@ public class QuestionDataAccessService implements QuizDao {
     private Optional<Question> getQuestionWithAnswer(int id) {
         return repository.findById(id);
     }
+
 }

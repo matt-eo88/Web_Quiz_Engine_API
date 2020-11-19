@@ -438,7 +438,7 @@ public class WebQuizEngineTest extends SpringTest {
 
     private CheckResult testSolveQuizNoAuth(int quizNum, String answerSent) {
         String url = "/api/quizzes/" + quizNum + "/solve";
-        HttpRequest req = post(url, "{" + " \"answer\" : " + answerSent + "}");
+        HttpRequest req = post(url, "{" + " \"answer\" : " + answerSent + "}");;
         HttpResponse resp = req.send();
         checkStatusCode(resp, 401);
         return CheckResult.correct();

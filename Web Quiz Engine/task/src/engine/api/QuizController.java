@@ -1,9 +1,6 @@
 package engine.api;
 
-import engine.model.Answer;
-import engine.model.AnswerJSon;
-import engine.model.Question;
-import engine.model.QuestionNoAnswer;
+import engine.model.*;
 import engine.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -44,5 +41,6 @@ public class QuizController
     {
         return quizService.insertQuestion(question);
     }
+
 
 }
