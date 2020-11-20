@@ -1,26 +1,41 @@
 package engine.service;
 
-import engine.dao.UserDao;
+import engine.exception.DuplicateEmailException;
 import engine.model.User;
+import engine.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
-
-    private UserDao userDao;
+public class UserService implements UserDetailsService {
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder encoder;
 
     @Autowired
-    public UserService(@Qualifier("uDao") UserDao userDao) {
-        this.userDao = userDao;
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder encoder) {
+        this.userRepository = userRepository;
+        this.encoder = encoder;
     }
 
-    public void insertUser(User user) {
-        userDao.insertUser(user);
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        String.format("No user %s found", username)));
     }
 
-    public void deleteUserById(int id) {
-        userDao.deleteUserById(id);
+    public Long registerNewUser(String username, String password) {
+        try {
+            var encodedPassword = encoder.encode(password);
+            var user = new User(username, encodedPassword);
+            return userRepository.save(user).getId();
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateEmailException();
+        }
     }
 }

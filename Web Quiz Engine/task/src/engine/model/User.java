@@ -1,60 +1,80 @@
 package engine.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Size;
+import java.util.Collection;
+import java.util.Collections;
 
-@Getter
 @Entity
 @Table(name = "user")
-public class User {
-
+public class User implements UserDetails {
     @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
-    @Column
-    @Email(message = "email not valid")
-    private String email;
-    @Column
-    @Size(min = 5 , message = "password too short")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
     private String password;
 
-    public User(@JsonProperty("id") int id,
-                @JsonProperty("email") String email,
-                @JsonProperty("password") String password) {
-        this.id = id;
-        this.email = email;
+    public User() { }
+
+    public User(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 
-    public User() {}
-
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getEmail() {
-        return email;
+    @Override
+    public String getUsername() {
+        return username;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
